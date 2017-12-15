@@ -1,0 +1,10 @@
+modules/speller/default/leditdist.lo: \
+ modules/speller/default/leditdist.cpp /usr/include/stdc-predef.h \
+ modules/speller/default/leditdist.hpp \
+ modules/speller/default/weights.hpp
+
+/usr/include/stdc-predef.h:
+
+modules/speller/default/leditdist.hpp:
+
+modules/speller/default/weights.hpp:

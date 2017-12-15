@@ -1,0 +1,11 @@
+lib/string_pair_enumeration-c.lo: lib/string_pair_enumeration-c.cpp \
+ /usr/include/stdc-predef.h common/string_pair.hpp \
+ common/string_pair_enumeration.hpp common/string_pair.hpp
+
+/usr/include/stdc-predef.h:
+
+common/string_pair.hpp:
+
+common/string_pair_enumeration.hpp:
+
+common/string_pair.hpp:

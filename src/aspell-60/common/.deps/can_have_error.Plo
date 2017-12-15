@@ -1,0 +1,16 @@
+common/can_have_error.lo: common/can_have_error.cpp \
+ /usr/include/stdc-predef.h common/error.hpp common/can_have_error.hpp \
+ common/copy_ptr.hpp common/generic_copy_ptr-t.hpp \
+ common/generic_copy_ptr.hpp
+
+/usr/include/stdc-predef.h:
+
+common/error.hpp:
+
+common/can_have_error.hpp:
+
+common/copy_ptr.hpp:
+
+common/generic_copy_ptr-t.hpp:
+
+common/generic_copy_ptr.hpp:
