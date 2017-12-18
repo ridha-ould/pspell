@@ -2503,33 +2503,38 @@ $as_echo "$SED" >&6; }
 
 EOF
 
+  clean_configure_args=$ac_configure_args
   for var in CFLAGS CXXFLAGS CPPFLAGS LDFLAGS EXTRA_LDFLAGS_PROGRAM LIBS CC CXX; do
     eval val=\$$var
     if test -n "$val"; then
       echo "$var='$val' \\" >> config.nice
+      if test `expr "X$ac_configure_args" : ".*${var}.*"` != 0; then
+        clean_configure_args=$(echo $clean_configure_args | sed -e "s#'$var=$val'##")
+      fi
     fi
   done
 
   echo "'$0' \\" >> config.nice
-  if test `expr -- $0 : "'.*"` = 0; then
+  if test `expr " $0" : " '.*"` = 0; then
     CONFIGURE_COMMAND="$CONFIGURE_COMMAND '$0'"
   else
     CONFIGURE_COMMAND="$CONFIGURE_COMMAND $0"
   fi
-  for arg in $ac_configure_args; do
-    if test `expr -- $arg : "'.*"` = 0; then
-      if test `expr -- $arg : "-.*"` = 0 && test `expr -- $arg : ".*=.*"` = 0; then
-        continue;
-      fi
-      echo "'$arg' \\" >> config.nice
-      CONFIGURE_OPTIONS="$CONFIGURE_OPTIONS '$arg'"
-    else
-      if test `expr -- $arg : "'-.*"` = 0 && test `expr -- $arg : "'.*=.*"` = 0; then
-        continue;
-      fi
-      echo "$arg \\" >> config.nice
-      CONFIGURE_OPTIONS="$CONFIGURE_OPTIONS $arg"
-    fi
+  CONFIGURE_ARGS="$clean_configure_args"
+  while test "X$CONFIGURE_ARGS" != "X";
+  do
+   if CURRENT_ARG=`expr "X$CONFIGURE_ARGS" : "X *\('[^']*'\)"`
+   then
+     CONFIGURE_ARGS=`expr "X$CONFIGURE_ARGS" : "X *'[^']*' \(.*\)"`
+   elif CURRENT_ARG=`expr "X$CONFIGURE_ARGS" : "X *\([^ ]*\)"`
+   then
+     CONFIGURE_ARGS=`expr "X$CONFIGURE_ARGS" : "X *[^ ]* \(.*\)"`
+     CURRENT_ARG="'$CURRENT_ARG'"
+   else
+    break
+   fi
+   $as_echo "$CURRENT_ARG \\" >>config.nice
+   CONFIGURE_OPTIONS="$CONFIGURE_OPTIONS $CURRENT_ARG"
   done
   echo '"$@"' >> config.nice
   chmod +x config.nice
@@ -3838,8 +3843,8 @@ fi
 rm -f conftest*
 
 CPPFLAGS=$old_CPPFLAGS
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $PHP_DEBUG" >&5
-$as_echo "$PHP_DEBUG" >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $PHP_THREAD_SAFETY" >&5
+$as_echo "$PHP_THREAD_SAFETY" >&6; }
 
 ZEND_EXT_TYPE="zend_extension"
 
@@ -4100,6 +4105,7 @@ if test "$PHP_PSPELL" != "no"; then
 
   ext_builddir=.
   ext_srcdir=$abs_srcdir
+  ext_dir=""
 
   ac_extra=
 
@@ -4107,10 +4113,10 @@ if test "$PHP_PSPELL" != "no"; then
     PHP_PSPELL_SHARED=no
 
 
-  case "" in
+  case $ext_dir in
   "") ac_srcdir="$abs_srcdir/"; unset ac_bdir; ac_inc="-I. -I$abs_srcdir" ;;
-  /*) ac_srcdir=`echo """"|cut -c 2-`"/"; ac_bdir=$ac_srcdir; ac_inc="-I$ac_bdir -I$abs_srcdir/$ac_bdir" ;;
-  *) ac_srcdir="$abs_srcdir/""/"; ac_bdir="""/"; ac_inc="-I$ac_bdir -I$ac_srcdir" ;;
+  /*) ac_srcdir=`echo "$ext_dir"|cut -c 2-`"/"; ac_bdir=$ac_srcdir; ac_inc="-I$ac_bdir -I$abs_srcdir/$ac_bdir" ;;
+  *) ac_srcdir="$abs_srcdir/$ext_dir/"; ac_bdir="$ext_dir/"; ac_inc="-I$ac_bdir -I$ac_srcdir" ;;
   esac
 
 
@@ -4148,18 +4154,18 @@ EOF
   done
 
 
-    EXT_STATIC="$EXT_STATIC pspell"
+    EXT_STATIC="$EXT_STATIC pspell;$ext_dir"
     if test "$ext_shared" != "nocli"; then
-      EXT_CLI_STATIC="$EXT_CLI_STATIC pspell"
+      EXT_CLI_STATIC="$EXT_CLI_STATIC pspell;$ext_dir"
     fi
   else
     if test "$ext_shared" = "shared" || test "$ext_shared" = "yes"; then
       PHP_PSPELL_SHARED=yes
 
-  case "" in
+  case $ext_dir in
   "") ac_srcdir="$abs_srcdir/"; unset ac_bdir; ac_inc="-I. -I$abs_srcdir" ;;
-  /*) ac_srcdir=`echo """"|cut -c 2-`"/"; ac_bdir=$ac_srcdir; ac_inc="-I$ac_bdir -I$abs_srcdir/$ac_bdir" ;;
-  *) ac_srcdir="$abs_srcdir/""/"; ac_bdir="""/"; ac_inc="-I$ac_bdir -I$ac_srcdir" ;;
+  /*) ac_srcdir=`echo "$ext_dir"|cut -c 2-`"/"; ac_bdir=$ac_srcdir; ac_inc="-I$ac_bdir -I$abs_srcdir/$ac_bdir" ;;
+  *) ac_srcdir="$abs_srcdir/$ext_dir/"; ac_bdir="$ext_dir/"; ac_inc="-I$ac_bdir -I$ac_srcdir" ;;
   esac
 
 
@@ -4208,7 +4214,7 @@ EOF
       ;;
     *netware*)
       suffix=nlm
-      link_cmd='$(LIBTOOL) --mode=link $(CC) $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS) $(LDFLAGS) -o $@ -shared -export-dynamic -avoid-version -prefer-pic -module -rpath $(phplibdir) $(EXTRA_LDFLAGS) $(shared_objects_pspell) -L$(top_builddir)/netware -lphp5lib $(PSPELL_SHARED_LIBADD)'
+      link_cmd='$(LIBTOOL) --mode=link $(CC) $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS) $(LDFLAGS) -o $@ -shared -export-dynamic -avoid-version -prefer-pic -module -rpath $(phplibdir) $(EXTRA_LDFLAGS) $(shared_objects_pspell) -L$(top_builddir)/netware -lphp7lib $(PSPELL_SHARED_LIBADD)'
       ;;
     *)
       suffix=la
@@ -4245,7 +4251,7 @@ EOF
       ;;
     *netware*)
       suffix=nlm
-      link_cmd='$(LIBTOOL) --mode=link $(CC) $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS) $(LDFLAGS) -o $@ -shared -export-dynamic -avoid-version -prefer-pic -module -rpath $(phplibdir) $(EXTRA_LDFLAGS) $(shared_objects_pspell) -L$(top_builddir)/netware -lphp5lib $(ELL_SHARED_LIBADD)'
+      link_cmd='$(LIBTOOL) --mode=link $(CC) $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS) $(LDFLAGS) -o $@ -shared -export-dynamic -avoid-version -prefer-pic -module -rpath $(phplibdir) $(EXTRA_LDFLAGS) $(shared_objects_pspell) -L$(top_builddir)/netware -lphp7lib $(ELL_SHARED_LIBADD)'
       ;;
     *)
       suffix=la
@@ -4286,10 +4292,10 @@ _ACEOF
       cgi|embed)
 
 
-  case "" in
+  case $ext_dir in
   "") ac_srcdir="$abs_srcdir/"; unset ac_bdir; ac_inc="-I. -I$abs_srcdir" ;;
-  /*) ac_srcdir=`echo """"|cut -c 2-`"/"; ac_bdir=$ac_srcdir; ac_inc="-I$ac_bdir -I$abs_srcdir/$ac_bdir" ;;
-  *) ac_srcdir="$abs_srcdir/""/"; ac_bdir="""/"; ac_inc="-I$ac_bdir -I$ac_srcdir" ;;
+  /*) ac_srcdir=`echo "$ext_dir"|cut -c 2-`"/"; ac_bdir=$ac_srcdir; ac_inc="-I$ac_bdir -I$abs_srcdir/$ac_bdir" ;;
+  *) ac_srcdir="$abs_srcdir/$ext_dir/"; ac_bdir="$ext_dir/"; ac_inc="-I$ac_bdir -I$ac_srcdir" ;;
   esac
 
 
@@ -4327,15 +4333,15 @@ EOF
   done
 
 
-        EXT_STATIC="$EXT_STATIC pspell"
+        EXT_STATIC="$EXT_STATIC pspell;$ext_dir"
         ;;
       *)
 
 
-  case "" in
+  case $ext_dir in
   "") ac_srcdir="$abs_srcdir/"; unset ac_bdir; ac_inc="-I. -I$abs_srcdir" ;;
-  /*) ac_srcdir=`echo """"|cut -c 2-`"/"; ac_bdir=$ac_srcdir; ac_inc="-I$ac_bdir -I$abs_srcdir/$ac_bdir" ;;
-  *) ac_srcdir="$abs_srcdir/""/"; ac_bdir="""/"; ac_inc="-I$ac_bdir -I$ac_srcdir" ;;
+  /*) ac_srcdir=`echo "$ext_dir"|cut -c 2-`"/"; ac_bdir=$ac_srcdir; ac_inc="-I$ac_bdir -I$abs_srcdir/$ac_bdir" ;;
+  *) ac_srcdir="$abs_srcdir/$ext_dir/"; ac_bdir="$ext_dir/"; ac_inc="-I$ac_bdir -I$ac_srcdir" ;;
   esac
 
 
@@ -4375,7 +4381,7 @@ EOF
 
         ;;
     esac
-    EXT_CLI_STATIC="$EXT_CLI_STATIC pspell"
+    EXT_CLI_STATIC="$EXT_CLI_STATIC pspell;$ext_dir"
   fi
 
 
@@ -5303,7 +5309,7 @@ ia64-*-hpux*)
   ;;
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 5306 "configure"' > conftest.$ac_ext
+  echo '#line 5312 "configure"' > conftest.$ac_ext
   if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -6711,7 +6717,7 @@ else
       LDFLAGS="$LDFLAGS -Wl,-exported_symbols_list,conftest.sym"
 
 cat > conftest.$ac_ext <<EOF
-#line 6714 "configure"
+#line 6720 "configure"
 #include "confdefs.h"
 int main() {
 ; return 0; }
@@ -6869,11 +6875,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"configure:6872: $lt_compile\"" >&5)
+   (eval echo "\"configure:6878: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "configure:6876: \$? = $ac_status" >&5
+   echo "configure:6882: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -7167,11 +7173,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"configure:7170: $lt_compile\"" >&5)
+   (eval echo "\"configure:7176: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "configure:7174: \$? = $ac_status" >&5
+   echo "configure:7180: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -7271,11 +7277,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"configure:7274: $lt_compile\"" >&5)
+   (eval echo "\"configure:7280: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "configure:7278: \$? = $ac_status" >&5
+   echo "configure:7284: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -7735,7 +7741,7 @@ _LT_EOF
        # Determine the default libpath from the value encoded in an empty executable.
 
 cat > conftest.$ac_ext <<EOF
-#line 7738 "configure"
+#line 7744 "configure"
 #include "confdefs.h"
 int main() {
 ; return 0; }
@@ -7777,7 +7783,7 @@ if test -z "$aix_libpath"; then aix_libpath="/usr/lib:/lib"; fi
 	 # Determine the default libpath from the value encoded in an empty executable.
 
 cat > conftest.$ac_ext <<EOF
-#line 7780 "configure"
+#line 7786 "configure"
 #include "confdefs.h"
 int main() {
 ; return 0; }
@@ -9294,7 +9300,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 9297 "configure"
+#line 9303 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -9394,7 +9400,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 9397 "configure"
+#line 9403 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -10459,7 +10465,7 @@ case $host_os in
       # Determine the default libpath from the value encoded in an empty executable.
 
 cat > conftest.$ac_ext <<EOF
-#line 10462 "configure"
+#line 10468 "configure"
 #include "confdefs.h"
 int main() {
 ; return 0; }
@@ -10502,7 +10508,7 @@ if test -z "$aix_libpath"; then aix_libpath="/usr/lib:/lib"; fi
 	# Determine the default libpath from the value encoded in an empty executable.
 
 cat > conftest.$ac_ext <<EOF
-#line 10505 "configure"
+#line 10511 "configure"
 #include "confdefs.h"
 int main() {
 ; return 0; }
@@ -11754,11 +11760,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"configure:11757: $lt_compile\"" >&5)
+   (eval echo "\"configure:11763: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "configure:11761: \$? = $ac_status" >&5
+   echo "configure:11767: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -11858,11 +11864,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"configure:11861: $lt_compile\"" >&5)
+   (eval echo "\"configure:11867: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "configure:11865: \$? = $ac_status" >&5
+   echo "configure:11871: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
