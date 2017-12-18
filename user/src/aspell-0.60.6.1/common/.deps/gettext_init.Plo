@@ -1,6 +1,0 @@
-common/gettext_init.lo: common/gettext_init.cpp \
- /usr/include/stdc-predef.h common/gettext.h
-
-/usr/include/stdc-predef.h:
-
-common/gettext.h:

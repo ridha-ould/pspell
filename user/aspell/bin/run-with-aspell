@@ -1,4 +1,0 @@
-#!/bin/sh
-PATH=/app/user/aspell/lib/aspell-0.60:$PATH
-export PATH
-exec $@
