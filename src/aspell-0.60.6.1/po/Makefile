@@ -34,29 +34,29 @@ INSTALL_DATA = ${INSTALL} -m 644
 # We use $(mkdir_p).
 # In automake <= 1.9.x, $(mkdir_p) is defined either as "mkdir -p --" or as
 # "$(mkinstalldirs)" or as "$(install_sh) -d". For these automake versions,
-# $(SHELL) /app/user/src/aspell-0.60.6.1/install-sh does not start with $(SHELL), so we add it.
+# $(SHELL) /app/user/src/src/aspell-0.60.6.1/install-sh does not start with $(SHELL), so we add it.
 # In automake >= 1.10, /bin/mkdir -p is derived from ${MKDIR_P}, which is defined
 # either as "/path/to/mkdir -p" or ".../install-sh -c -d". For these automake
 # versions, $(mkinstalldirs) and $(install_sh) are unused.
-mkinstalldirs = $(SHELL) $(SHELL) /app/user/src/aspell-0.60.6.1/install-sh -d
-install_sh = $(SHELL) $(SHELL) /app/user/src/aspell-0.60.6.1/install-sh
+mkinstalldirs = $(SHELL) $(SHELL) /app/user/src/src/aspell-0.60.6.1/install-sh -d
+install_sh = $(SHELL) $(SHELL) /app/user/src/src/aspell-0.60.6.1/install-sh
 MKDIR_P = /bin/mkdir -p
 mkdir_p = /bin/mkdir -p
 
-GMSGFMT_ = /app/.heroku/php/bin/msgfmt
-GMSGFMT_no = /app/.heroku/php/bin/msgfmt
-GMSGFMT_yes = /app/.heroku/php/bin/msgfmt
+GMSGFMT_ = :
+GMSGFMT_no = :
+GMSGFMT_yes = :
 GMSGFMT = $(GMSGFMT_$(USE_MSGCTXT))
-MSGFMT_ = /app/.heroku/php/bin/msgfmt
-MSGFMT_no = /app/.heroku/php/bin/msgfmt
-MSGFMT_yes = /app/.heroku/php/bin/msgfmt
+MSGFMT_ = :
+MSGFMT_no = :
+MSGFMT_yes = :
 MSGFMT = $(MSGFMT_$(USE_MSGCTXT))
-XGETTEXT_ = /app/.heroku/php/bin/xgettext
-XGETTEXT_no = /app/.heroku/php/bin/xgettext
-XGETTEXT_yes = /app/.heroku/php/bin/xgettext
+XGETTEXT_ = :
+XGETTEXT_no = :
+XGETTEXT_yes = :
 XGETTEXT = $(XGETTEXT_$(USE_MSGCTXT))
 MSGMERGE = msgmerge
-MSGMERGE_UPDATE = /app/.heroku/php/bin/msgmerge --update
+MSGMERGE_UPDATE = : --update
 MSGINIT = msginit
 MSGCONV = msgconv
 MSGFILTER = msgfilter
