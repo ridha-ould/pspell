@@ -1,0 +1,8 @@
+pspell.lo: /app/user/src/pspell/pspell.c
+	$(LIBTOOL) --mode=compile $(CC)  -I. -I/app/user/src/pspell $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS)  -c /app/user/src/pspell/pspell.c -o pspell.lo 
+$(phplibdir)/pspell.la: ./pspell.la
+	$(LIBTOOL) --mode=install cp ./pspell.la $(phplibdir)
+
+./pspell.la: $(shared_objects_pspell) $(PSPELL_SHARED_DEPENDENCIES)
+	$(LIBTOOL) --mode=link $(CC) $(COMMON_FLAGS) $(CFLAGS_CLEAN) $(EXTRA_CFLAGS) $(LDFLAGS) -o $@ -export-dynamic -avoid-version -prefer-pic -module -rpath $(phplibdir) $(EXTRA_LDFLAGS) $(shared_objects_pspell) $(PSPELL_SHARED_LIBADD)
+

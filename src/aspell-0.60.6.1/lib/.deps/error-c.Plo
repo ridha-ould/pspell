@@ -1,0 +1,6 @@
+lib/error-c.lo: lib/error-c.cpp /usr/include/stdc-predef.h \
+ common/error.hpp
+
+/usr/include/stdc-predef.h:
+
+common/error.hpp:
